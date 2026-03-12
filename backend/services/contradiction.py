@@ -5,7 +5,7 @@ from config import get_settings
 from database import claims_collection
 
 settings = get_settings()
-client = AsyncOpenAI(api_key=settings.openai_api_key)
+client = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
 
 
 async def detect_contradictions(case_id: str, new_claims: list[dict]) -> list[dict]:

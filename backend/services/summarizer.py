@@ -4,7 +4,7 @@ from openai import AsyncOpenAI
 from config import get_settings
 
 settings = get_settings()
-client = AsyncOpenAI(api_key=settings.openai_api_key)
+client = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
 
 
 async def generate_summary(text: str) -> str:

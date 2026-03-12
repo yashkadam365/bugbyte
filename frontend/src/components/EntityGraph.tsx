@@ -37,25 +37,47 @@ const typeColors: Record<string, string> = {
 
 export default function EntityGraph({ entities, relationships }: Props) {
     const elements = useMemo(() => {
-        const nodes = entities.map((e) => ({
+        // 1. Remove date-type entities
+        const filtered = entities.filter((e) => e.type !== "date");
+
+        // 2. Deduplicate by normalized name — first occurrence wins
+        const seen = new Set<string>();
+        const deduped = filtered.filter((e) => {
+            const key = e.name.toLowerCase().trim();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        // 3. Keep top 15 by documentCount
+        const top = deduped
+            .sort((a, b) => b.documentCount - a.documentCount)
+            .slice(0, 15);
+
+        const nodeIds = new Set(top.map((e) => e._id));
+
+        const nodes = top.map((e) => ({
             data: {
                 id: e._id,
                 label: e.name,
                 type: e.type,
-                size: Math.max(20, Math.min(60, 15 + e.documentCount * 8)),
+                size: 40 + e.documentCount * 6,
                 color: typeColors[e.type] || typeColors.unknown,
             },
         }));
 
-        const edges = relationships.map((r) => ({
-            data: {
-                id: r._id,
-                source: r.sourceEntityId,
-                target: r.targetEntityId,
-                label: r.type.replace(/_/g, " "),
-                width: Math.max(1, r.confidence * 3),
-            },
-        }));
+        // 4. Only include edges where both endpoints survived filtering
+        const edges = relationships
+            .filter((r) => nodeIds.has(r.sourceEntityId) && nodeIds.has(r.targetEntityId))
+            .map((r) => ({
+                data: {
+                    id: r._id,
+                    source: r.sourceEntityId,
+                    target: r.targetEntityId,
+                    label: r.type.replace(/_/g, " "),
+                    width: Math.max(1, r.confidence * 3),
+                },
+            }));
 
         return [...nodes, ...edges];
     }, [entities, relationships]);
@@ -87,8 +109,7 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 "target-arrow-color": "rgba(59, 130, 246, 0.4)",
                 "target-arrow-shape": "triangle",
                 "curve-style": "bezier",
-                label: "data(label)",
-                "font-size": "9px",
+                label: "",
                 color: "#64748b",
                 "text-rotation": "autorotate",
                 "text-outline-width": 2,
@@ -105,7 +126,7 @@ export default function EntityGraph({ entities, relationships }: Props) {
     ];
 
     return (
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "500px" }}>
             <CytoscapeComponent
                 elements={elements}
                 stylesheet={stylesheet}
@@ -113,13 +134,14 @@ export default function EntityGraph({ entities, relationships }: Props) {
                     name: "cose",
                     animate: true,
                     animationDuration: 500,
-                    nodeRepulsion: () => 8000,
-                    idealEdgeLength: () => 120,
-                    gravity: 0.3,
+                    nodeRepulsion: 500000,
+                    idealEdgeLength: 220,
+                    gravity: 0.25,
+                    padding: 50,
                 } as any}
                 style={{
                     width: "100%",
-                    height: "500px",
+                    height: "100%",
                     background: "var(--bg-primary)",
                     borderRadius: 16,
                 }}
@@ -137,7 +159,7 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 border: "1px solid var(--border-subtle)",
                 fontSize: 11,
             }}>
-                {Object.entries(typeColors).filter(([k]) => k !== "unknown").map(([type, color]) => (
+                {Object.entries(typeColors).filter(([k]) => k !== "unknown" && k !== "date").map(([type, color]) => (
                     <span key={type} style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--text-secondary)" }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block" }} />
                         {type}

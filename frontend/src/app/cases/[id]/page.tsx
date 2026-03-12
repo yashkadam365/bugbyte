@@ -136,12 +136,12 @@ export default function CaseDetailPage() {
             setPipelineStatus(null);
             fetchAll();
         } else if (lastMessage.type === "pipeline_progress") {
-            setPipelineStatus(lastMessage.message || "Processing...");
+            setPipelineStatus(lastMessage?.message || "Processing...");
         } else if (lastMessage.type === "contradictions_found") {
-            setPipelineStatus(`⚠️ ${lastMessage.count} contradiction(s) detected!`);
+            setPipelineStatus(`⚠️ ${lastMessage?.count ?? 0} contradiction(s) detected!`);
             fetchAll();
         } else if (lastMessage.type === "health_updated" || lastMessage.type === "pipeline_error") {
-            setPipelineStatus(lastMessage.message || null);
+            setPipelineStatus(lastMessage?.message || null);
             fetchAll();
         }
     }, [lastMessage, fetchAll]);
@@ -490,7 +490,7 @@ export default function CaseDetailPage() {
                                 <p style={{ color: "var(--text-muted)" }}>No entities discovered yet. Upload evidence to build the graph.</p>
                             </div>
                         ) : (
-                            <div className="glass-card" style={{ padding: 0, overflow: "hidden", borderRadius: 16 }}>
+                            <div style={{ height: "calc(100vh - 200px)", width: "100%", borderRadius: 16, overflow: "hidden" }}>
                                 <EntityGraph entities={entities} relationships={relationships} />
                             </div>
                         )}
