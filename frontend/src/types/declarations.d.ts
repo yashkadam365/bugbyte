@@ -24,10 +24,19 @@ declare module "vis-timeline/standalone" {
         constructor(container: HTMLElement, items: any, options?: any);
         fit(): void;
         destroy(): void;
+        setGroups(groups: any): void;
     }
     export class DataSet<T = any> {
         constructor(items?: T[]);
         add(item: T | T[]): void;
         remove(id: string | number): void;
+    }
+}
+
+// Styled JSX declaration
+declare module "react" {
+    interface StyleHTMLAttributes<T> extends React.HTMLAttributes<T> {
+        jsx?: boolean;
+        global?: boolean;
     }
 }

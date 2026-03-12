@@ -11,10 +11,11 @@ import { useWebSocket } from "@/lib/useWebSocket";
 import {
     ArrowLeft, FileText, GitGraph, Clock, AlertTriangle,
     Activity, BarChart3, Upload, Loader2, ChevronDown, ChevronUp,
-    Shield, BookOpen, Eye, Trash2, ExternalLink, X
+    Shield, BookOpen, Eye, Trash2, ExternalLink, X, Users, TrendingUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import { Navbar } from "@/components/ui/Navbar";
 
 // Dynamic imports for heavy libraries
 const EntityGraph = dynamic(() => import("@/components/EntityGraph"), { ssr: false });
@@ -214,24 +215,46 @@ export default function CaseDetailPage() {
     }
 
     return (
-        <div style={{ minHeight: "100vh" }}>
-            {/* Top Bar */}
-            <div style={{
-                padding: "16px 32px",
+        <div style={{ minHeight: "100vh", background: "var(--bg-primary)" }}>
+            {/* Enhanced Top Bar with Navbar styling */}
+            <div className="navbar" style={{
+                padding: "14px 28px",
                 borderBottom: "1px solid var(--border-subtle)",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                background: "var(--bg-secondary)"
             }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <button className="btn-ghost" onClick={() => router.push("/")} style={{ padding: "6px 10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                    <motion.button
+                        className="btn-ghost"
+                        onClick={() => router.push("/")}
+                        style={{ padding: "8px 12px" }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
                         <ArrowLeft size={18} />
-                    </button>
-                    <div>
-                        <h1 style={{ fontSize: 20, fontWeight: 700 }}>{caseData.title}</h1>
-                        <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{caseData.description}</p>
+                    </motion.button>
+                    <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: 20 }}>
+                        <h1 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em" }}>{caseData.title}</h1>
+                        <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{caseData.description}</p>
                     </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    {/* Quick Stats */}
+                    <div style={{ display: "flex", gap: 16, marginRight: 8 }}>
+                        <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--accent-blue)" }}>{entities.length}</div>
+                            <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Entities</div>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--accent-purple)" }}>{claims.length}</div>
+                            <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Claims</div>
+                        </div>
+                        <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: contradictions.length > 0 ? "var(--accent-red)" : "var(--accent-green)" }}>
+                                {contradictions.length}
+                            </div>
+                            <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Issues</div>
+                        </div>
+                    </div>
+                    <div style={{ width: 1, height: 32, background: "var(--border-subtle)" }} />
                     {isConnected && (
                         <span className="badge badge-success" style={{ fontSize: 11 }}>
                             ● Live
@@ -242,15 +265,20 @@ export default function CaseDetailPage() {
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="badge badge-primary"
-                            style={{ fontSize: 11, maxWidth: 300 }}
+                            style={{ fontSize: 11, maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                         >
-                            <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />
+                            <Loader2 size={10} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
                             {pipelineStatus}
                         </motion.span>
                     )}
-                    <button className="btn-primary" onClick={() => setShowUpload(!showUpload)}>
+                    <motion.button
+                        className="btn-primary"
+                        onClick={() => setShowUpload(!showUpload)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
                         <Upload size={16} /> Add Evidence
-                    </button>
+                    </motion.button>
                 </div>
             </div>
 
@@ -327,37 +355,49 @@ export default function CaseDetailPage() {
                 )}
             </AnimatePresence>
 
-            {/* Tabs */}
+            {/* Enhanced Tabs */}
             <div style={{
-                display: "flex", gap: 0, padding: "0 32px",
+                display: "flex", gap: 0, padding: "0 28px",
                 borderBottom: "1px solid var(--border-subtle)",
-                background: "var(--bg-secondary)", overflowX: "auto"
+                background: "rgba(12, 16, 41, 0.6)",
+                backdropFilter: "blur(12px)",
+                overflowX: "auto",
+                position: "sticky",
+                top: 0,
+                zIndex: 40,
             }}>
                 {tabs.map((tab) => (
-                    <div
+                    <motion.div
                         key={tab.key}
                         className={`tab-item ${activeTab === tab.key ? "active" : ""}`}
                         onClick={() => setActiveTab(tab.key)}
+                        whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.05)" }}
+                        style={{ padding: "14px 24px" }}
                     >
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                            <tab.icon size={14} />
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <tab.icon size={15} />
                             {tab.label}
                             {tab.count !== undefined && tab.count > 0 && (
                                 <span style={{
-                                    fontSize: 11, background: activeTab === tab.key ? "rgba(59,130,246,0.2)" : "var(--bg-tertiary)",
-                                    padding: "1px 7px", borderRadius: 8, fontWeight: 600,
-                                    color: activeTab === tab.key ? "var(--accent-blue)" : "var(--text-muted)"
+                                    fontSize: 11,
+                                    background: activeTab === tab.key ? "rgba(59,130,246,0.25)" : "var(--bg-tertiary)",
+                                    padding: "2px 8px",
+                                    borderRadius: 10,
+                                    fontWeight: 600,
+                                    color: activeTab === tab.key ? "var(--accent-blue)" : "var(--text-muted)",
+                                    minWidth: 20,
+                                    textAlign: "center",
                                 }}>
                                     {tab.count}
                                 </span>
                             )}
                         </span>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 
-            {/* Tab Content */}
-            <div style={{ padding: "24px 32px" }}>
+            {/* Tab Content with improved spacing */}
+            <div style={{ padding: "28px 32px", maxWidth: 1600, margin: "0 auto" }}>
                 {/* ─── EVIDENCE TAB ─── */}
                 {activeTab === "evidence" && (
                     <div>
@@ -485,13 +525,141 @@ export default function CaseDetailPage() {
                 {activeTab === "graph" && (
                     <div>
                         {entities.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: 60 }}>
-                                <GitGraph size={40} style={{ margin: "0 auto 12px", opacity: 0.3, color: "var(--accent-purple)" }} />
-                                <p style={{ color: "var(--text-muted)" }}>No entities discovered yet. Upload evidence to build the graph.</p>
+                            <div style={{ textAlign: "center", padding: 80 }}>
+                                <GitGraph size={48} style={{ margin: "0 auto 16px", opacity: 0.3, color: "var(--accent-purple)" }} />
+                                <p style={{ color: "var(--text-muted)", fontSize: 15 }}>No entities discovered yet. Upload evidence to build the graph.</p>
                             </div>
                         ) : (
-                            <div style={{ height: "calc(100vh - 200px)", width: "100%", borderRadius: 16, overflow: "hidden" }}>
-                                <EntityGraph entities={entities} relationships={relationships} />
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "280px 1fr 280px",
+                                gap: 20,
+                                minHeight: "calc(100vh - 240px)",
+                            }}>
+                                {/* Left Sidebar - Entities List */}
+                                <div className="case-sidebar">
+                                    <div className="section-header" style={{ marginBottom: 16 }}>
+                                        <span className="section-title">
+                                            <Users size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+                                            Entities ({entities.length})
+                                        </span>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        {entities.slice(0, 20).map((entity, idx) => (
+                                            <motion.div
+                                                key={entity._id}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: idx * 0.02 }}
+                                                className="insight-item"
+                                                style={{ padding: 12 }}
+                                            >
+                                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                    <div style={{
+                                                        width: 10,
+                                                        height: 10,
+                                                        borderRadius: "50%",
+                                                        flexShrink: 0,
+                                                        background: entity.type === "person" ? "var(--accent-blue)" :
+                                                            entity.type === "organization" ? "var(--accent-purple)" :
+                                                            entity.type === "location" ? "var(--accent-green)" :
+                                                            entity.type === "event" ? "var(--accent-pink)" : "var(--accent-amber)",
+                                                        boxShadow: `0 0 8px ${
+                                                            entity.type === "person" ? "var(--accent-blue)" :
+                                                            entity.type === "organization" ? "var(--accent-purple)" :
+                                                            entity.type === "location" ? "var(--accent-green)" :
+                                                            entity.type === "event" ? "var(--accent-pink)" : "var(--accent-amber)"
+                                                        }`,
+                                                    }} />
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{
+                                                            fontSize: 13,
+                                                            fontWeight: 600,
+                                                            color: "var(--text-primary)",
+                                                            whiteSpace: "nowrap",
+                                                            overflow: "hidden",
+                                                            textOverflow: "ellipsis",
+                                                        }}>
+                                                            {entity.name}
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "capitalize" }}>
+                                                            {entity.type} • {entity.documentCount} docs
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                        {entities.length > 20 && (
+                                            <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: 8 }}>
+                                                +{entities.length - 20} more entities
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Center - Graph */}
+                                <div style={{ height: "calc(100vh - 260px)", width: "100%", borderRadius: 16, overflow: "hidden" }}>
+                                    <EntityGraph entities={entities} relationships={relationships} />
+                                </div>
+
+                                {/* Right Sidebar - Relationships */}
+                                <div className="case-sidebar">
+                                    <div className="section-header" style={{ marginBottom: 16 }}>
+                                        <span className="section-title">
+                                            <GitGraph size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+                                            Relationships ({relationships.length})
+                                        </span>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        {relationships.slice(0, 15).map((rel, idx) => (
+                                            <motion.div
+                                                key={rel._id}
+                                                initial={{ opacity: 0, x: 10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: idx * 0.02 }}
+                                                style={{
+                                                    padding: 12,
+                                                    borderRadius: 10,
+                                                    background: "rgba(17, 22, 56, 0.5)",
+                                                    border: "1px solid transparent",
+                                                    fontSize: 12,
+                                                }}
+                                            >
+                                                <div style={{ color: "var(--text-primary)", fontWeight: 500, marginBottom: 4 }}>
+                                                    {rel.sourceName}
+                                                </div>
+                                                <div style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                    color: "var(--accent-blue)",
+                                                    fontSize: 11,
+                                                    margin: "4px 0",
+                                                }}>
+                                                    <span style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
+                                                    {rel.type.replace(/_/g, " ")}
+                                                    <span style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
+                                                </div>
+                                                <div style={{ color: "var(--text-primary)", fontWeight: 500 }}>
+                                                    {rel.targetName}
+                                                </div>
+                                                <div style={{ marginTop: 6, fontSize: 10, color: "var(--text-muted)" }}>
+                                                    Confidence: {(rel.confidence * 100).toFixed(0)}%
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                        {relationships.length > 15 && (
+                                            <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: 8 }}>
+                                                +{relationships.length - 15} more relationships
+                                            </div>
+                                        )}
+                                        {relationships.length === 0 && (
+                                            <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: 20 }}>
+                                                No relationships detected yet
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
