@@ -17,18 +17,18 @@ interface StatCardProps {
 
 const variantColors = {
   default: 'var(--gradient-primary)',
-  primary: 'linear-gradient(135deg, #3b82f6, #06b6d4)',
-  success: 'linear-gradient(135deg, #10b981, #06b6d4)',
-  warning: 'linear-gradient(135deg, #f59e0b, #ec4899)',
-  danger: 'linear-gradient(135deg, #ef4444, #ec4899)'
+  primary: 'var(--gradient-primary)',
+  success: 'var(--gradient-success)',
+  warning: 'linear-gradient(135deg, #f59e0b, #F7931A)',
+  danger: 'var(--gradient-danger)'
 };
 
 const variantGlows = {
-  default: 'rgba(59, 130, 246, 0.15)',
-  primary: 'rgba(59, 130, 246, 0.2)',
-  success: 'rgba(16, 185, 129, 0.2)',
-  warning: 'rgba(245, 158, 11, 0.2)',
-  danger: 'rgba(239, 68, 68, 0.2)'
+  default: 'rgba(247, 147, 26, 0.12)',
+  primary: 'rgba(247, 147, 26, 0.15)',
+  success: 'rgba(16, 185, 129, 0.15)',
+  warning: 'rgba(245, 158, 11, 0.15)',
+  danger: 'rgba(239, 68, 68, 0.15)'
 };
 
 export function StatCard({
@@ -47,7 +47,7 @@ export function StatCard({
       onClick={onClick}
       style={{
         cursor: onClick ? 'pointer' : 'default',
-        boxShadow: `0 4px 20px ${variantGlows[variant]}`
+        boxShadow: `0 4px 24px ${variantGlows[variant]}`
       }}
     >
       <div style={{
@@ -66,8 +66,8 @@ export function StatCard({
         </div>
         {icon && (
           <div style={{
-            color: 'var(--text-muted)',
-            opacity: 0.7
+            color: 'var(--accent-orange)',
+            opacity: 0.5
           }}>
             {icon}
           </div>
@@ -81,6 +81,7 @@ export function StatCard({
           alignItems: 'center',
           gap: '4px',
           fontSize: '12px',
+          fontFamily: 'var(--font-mono)',
           color: trend.direction === 'up' ? 'var(--accent-green)' : 'var(--accent-red)'
         }}>
           <span>{trend.direction === 'up' ? '↑' : '↓'}</span>

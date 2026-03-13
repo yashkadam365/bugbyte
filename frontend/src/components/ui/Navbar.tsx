@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Shield, Menu, X } from 'lucide-react';
+import { Shield, Menu, X, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
@@ -28,12 +28,23 @@ export function Navbar({
           <Shield
             size={28}
             style={{
-              color: 'var(--accent-blue)',
-              filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
+              color: '#F7931A',
+              filter: 'drop-shadow(0 0 10px rgba(247, 147, 26, 0.6))'
             }}
           />
         </motion.div>
         <span className="navbar-logo">NEXUS</span>
+        <span style={{
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.15em',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          fontFamily: 'var(--font-heading)',
+          marginLeft: -4
+        }}>
+          Intelligence
+        </span>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

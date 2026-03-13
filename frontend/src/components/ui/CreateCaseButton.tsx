@@ -43,7 +43,7 @@ export function CreateCaseButton({
         transition={{ delay: 0.5 }}
         whileHover={{
           scale: 1.05,
-          boxShadow: '0 12px 40px rgba(59, 130, 246, 0.5)'
+          boxShadow: '0 0 50px -5px rgba(247, 147, 26, 0.7)'
         }}
         whileTap={{ scale: 0.95 }}
       >

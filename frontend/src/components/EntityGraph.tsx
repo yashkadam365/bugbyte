@@ -1,62 +1,43 @@
 "use client";
 
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import CytoscapeComponent from "react-cytoscapejs";
-
-interface Entity {
-    _id: string;
-    name: string;
-    type: string;
-    documentCount: number;
-    noveltyScore: number;
-}
-
-interface Relationship {
-    _id: string;
-    sourceEntityId: string;
-    targetEntityId: string;
-    sourceName: string;
-    targetName: string;
-    type: string;
-    confidence: number;
-}
+import type { Entity, Relationship } from "@/lib/types";
 
 interface Props {
     entities: Entity[];
     relationships: Relationship[];
 }
 
+// ═══ Orange/Gold theme — matches NEXUS design system ═══
 const typeColors: Record<string, string> = {
-    person: "#3b82f6",
-    organization: "#8b5cf6",
-    location: "#10b981",
-    date: "#f59e0b",
-    event: "#ec4899",
-    unknown: "#64748b",
+    person: "#F7931A",       // Bitcoin Orange
+    organization: "#EA580C", // Burnt Orange
+    location: "#10b981",     // Green (semantic — keep)
+    date: "#FFD600",         // Digital Gold
+    event: "#f59e0b",        // Amber
+    unknown: "#64748b",      // Slate
 };
 
-// Glow colors for each type (slightly brighter/more saturated)
 const typeGlowColors: Record<string, string> = {
-    person: "rgba(59, 130, 246, 0.6)",
-    organization: "rgba(139, 92, 246, 0.6)",
+    person: "rgba(247, 147, 26, 0.6)",
+    organization: "rgba(234, 88, 12, 0.6)",
     location: "rgba(16, 185, 129, 0.6)",
-    date: "rgba(245, 158, 11, 0.6)",
-    event: "rgba(236, 72, 153, 0.6)",
+    date: "rgba(255, 214, 0, 0.6)",
+    event: "rgba(245, 158, 11, 0.6)",
     unknown: "rgba(100, 116, 139, 0.4)",
 };
 
-// Edge colors based on source type
 const edgeColors: Record<string, string> = {
-    person: "rgba(59, 130, 246, 0.5)",
-    organization: "rgba(139, 92, 246, 0.5)",
+    person: "rgba(247, 147, 26, 0.5)",
+    organization: "rgba(234, 88, 12, 0.5)",
     location: "rgba(16, 185, 129, 0.5)",
-    event: "rgba(236, 72, 153, 0.5)",
-    default: "rgba(59, 130, 246, 0.4)",
+    event: "rgba(245, 158, 11, 0.5)",
+    default: "rgba(247, 147, 26, 0.4)",
 };
 
 export default function EntityGraph({ entities, relationships }: Props) {
     const cyRef = useRef<any>(null);
-    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
     const elements = useMemo(() => {
         // 1. Remove date-type entities
@@ -110,36 +91,32 @@ export default function EntityGraph({ entities, relationships }: Props) {
         return [...nodes, ...edges];
     }, [entities, relationships]);
 
-    // Apply glow effect using shadow
+    // Hover animations with proper cleanup
     useEffect(() => {
-        if (cyRef.current) {
-            const cy = cyRef.current;
+        if (!cyRef.current) return;
+        const cy = cyRef.current;
 
-            // Add hover animations
-            cy.on("mouseover", "node", (e: any) => {
-                const node = e.target;
-                setHoveredNode(node.id());
-                node.animate({
-                    style: {
-                        "border-width": 4,
-                        "border-opacity": 1,
-                    },
-                    duration: 150,
-                });
+        const onMouseOver = (e: any) => {
+            e.target.animate({
+                style: { "border-width": 4, "border-opacity": 1 },
+                duration: 150,
             });
+        };
 
-            cy.on("mouseout", "node", (e: any) => {
-                const node = e.target;
-                setHoveredNode(null);
-                node.animate({
-                    style: {
-                        "border-width": 3,
-                        "border-opacity": 0.8,
-                    },
-                    duration: 150,
-                });
+        const onMouseOut = (e: any) => {
+            e.target.animate({
+                style: { "border-width": 3, "border-opacity": 0.8 },
+                duration: 150,
             });
-        }
+        };
+
+        cy.on("mouseover", "node", onMouseOver);
+        cy.on("mouseout", "node", onMouseOut);
+
+        return () => {
+            cy.off("mouseover", "node", onMouseOver);
+            cy.off("mouseout", "node", onMouseOut);
+        };
     }, [elements]);
 
     const stylesheet: any[] = [
@@ -161,10 +138,9 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 "border-color": "data(color)" as any,
                 "border-opacity": 0.8,
                 "text-outline-width": 3,
-                "text-outline-color": "#060918",
+                "text-outline-color": "#0F1115",
                 "text-outline-opacity": 1,
                 "overlay-opacity": 0,
-                // Glow effect via border
                 "shadow-blur": 20,
                 "shadow-color": "data(glowColor)" as any,
                 "shadow-opacity": 0.8,
@@ -187,7 +163,7 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 "font-size": "10px",
                 "text-rotation": "autorotate",
                 "text-outline-width": 2,
-                "text-outline-color": "#060918",
+                "text-outline-color": "#0F1115",
                 "line-cap": "round",
             } as any,
         },
@@ -195,7 +171,7 @@ export default function EntityGraph({ entities, relationships }: Props) {
             selector: "node:selected",
             style: {
                 "border-width": 5,
-                "border-color": "#ffffff",
+                "border-color": "#FFD600",
                 "shadow-blur": 30,
                 "shadow-opacity": 1,
             } as any,
@@ -211,11 +187,11 @@ export default function EntityGraph({ entities, relationships }: Props) {
 
     return (
         <div className="graph-container" style={{ position: "relative", width: "100%", height: "100%", minHeight: "500px" }}>
-            {/* Ambient glow background */}
+            {/* Ambient glow — orange themed */}
             <div style={{
                 position: "absolute",
                 inset: 0,
-                background: "radial-gradient(ellipse at center, rgba(59, 130, 246, 0.08) 0%, transparent 60%)",
+                background: "radial-gradient(ellipse at center, rgba(247, 147, 26, 0.06) 0%, transparent 60%)",
                 pointerEvents: "none",
                 zIndex: 0,
             }} />
@@ -238,7 +214,7 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 style={{
                     width: "100%",
                     height: "100%",
-                    background: "linear-gradient(180deg, rgba(6, 9, 24, 0.95) 0%, rgba(12, 16, 41, 0.98) 100%)",
+                    background: "linear-gradient(180deg, rgba(15, 17, 21, 0.95) 0%, rgba(3, 3, 4, 0.98) 100%)",
                     borderRadius: 16,
                     position: "relative",
                     zIndex: 1,
@@ -248,14 +224,14 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 boxSelectionEnabled={true}
             />
 
-            {/* Enhanced Legend */}
+            {/* Legend — orange themed */}
             <div style={{
                 position: "absolute", bottom: 16, left: 16,
                 display: "flex", gap: 14, flexWrap: "wrap",
                 padding: "10px 16px", borderRadius: 12,
-                background: "rgba(6, 9, 24, 0.9)",
+                background: "rgba(15, 17, 21, 0.9)",
                 backdropFilter: "blur(12px)",
-                border: "1px solid rgba(59, 130, 246, 0.15)",
+                border: "1px solid rgba(247, 147, 26, 0.15)",
                 fontSize: 11,
                 fontWeight: 500,
                 boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
@@ -281,14 +257,14 @@ export default function EntityGraph({ entities, relationships }: Props) {
                 ))}
             </div>
 
-            {/* Controls hint */}
+            {/* Controls hint — orange themed */}
             <div style={{
                 position: "absolute", bottom: 16, right: 16,
                 padding: "8px 12px",
                 borderRadius: 8,
-                background: "rgba(6, 9, 24, 0.85)",
+                background: "rgba(15, 17, 21, 0.85)",
                 backdropFilter: "blur(8px)",
-                border: "1px solid rgba(59, 130, 246, 0.1)",
+                border: "1px solid rgba(247, 147, 26, 0.1)",
                 fontSize: 10,
                 color: "var(--text-muted)",
             }}>

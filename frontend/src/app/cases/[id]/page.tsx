@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     getCase, listEvidence, listClaims, listEntities,
     listRelationships, listTimelineEvents, getInvestigationHealth,
     uploadEvidence, deleteEvidence
 } from "@/lib/api";
+import type { EvidenceItem, Claim, Entity, Relationship, TimelineEvent as TimelineEventType, HealthSignal } from "@/lib/types";
 import { useWebSocket } from "@/lib/useWebSocket";
 import {
     ArrowLeft, FileText, GitGraph, Clock, AlertTriangle,
     Activity, BarChart3, Upload, Loader2, ChevronDown, ChevronUp,
-    Shield, BookOpen, Eye, Trash2, ExternalLink, X, Users, TrendingUp
+    Shield, Eye, Trash2, X, Users, TrendingUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-import { Navbar } from "@/components/ui/Navbar";
 
 // Dynamic imports for heavy libraries
 const EntityGraph = dynamic(() => import("@/components/EntityGraph"), { ssr: false });
@@ -23,65 +23,7 @@ const TimelineView = dynamic(() => import("@/components/TimelineView"), { ssr: f
 
 type Tab = "evidence" | "graph" | "timeline" | "contradictions" | "health" | "rankings";
 
-interface EvidenceItem {
-    _id: string;
-    title: string;
-    type: string;
-    content: string;
-    summary: string;
-    credibility: string;
-    impactScore: number;
-    status: string;
-    claims: string[];
-    createdAt: string;
-}
-
-interface Claim {
-    _id: string;
-    statement: string;
-    entities: string[];
-    date: string | null;
-    confidence: number;
-    credibility: string;
-    contradictedBy: string[];
-    corroboratedBy: string[];
-    evidenceId: string;
-}
-
-interface Entity {
-    _id: string;
-    name: string;
-    type: string;
-    aliases: string[];
-    documentCount: number;
-    noveltyScore: number;
-}
-
-interface Relationship {
-    _id: string;
-    sourceEntityId: string;
-    targetEntityId: string;
-    sourceName: string;
-    targetName: string;
-    type: string;
-    confidence: number;
-}
-
-interface TimelineEvent {
-    _id: string;
-    date: string | null;
-    approxDate: string | null;
-    description: string;
-    entitiesInvolved: string[];
-}
-
-interface HealthSignal {
-    _id: string;
-    status: string;
-    description: string;
-    docsAdded: number;
-    newFactsRecent: number;
-}
+// All interfaces imported from @/lib/types
 
 export default function CaseDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -92,7 +34,7 @@ export default function CaseDetailPage() {
     const [claims, setClaims] = useState<Claim[]>([]);
     const [entities, setEntities] = useState<Entity[]>([]);
     const [relationships, setRelationships] = useState<Relationship[]>([]);
-    const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+    const [timelineEvents, setTimelineEvents] = useState<TimelineEventType[]>([]);
     const [healthSignals, setHealthSignals] = useState<HealthSignal[]>([]);
     const [uploading, setUploading] = useState(false);
     const [uploadType, setUploadType] = useState<"note" | "url" | "pdf">("note");
@@ -102,6 +44,7 @@ export default function CaseDetailPage() {
     const [selectedEvidence, setSelectedEvidence] = useState<string | null>(null);
     const [showUpload, setShowUpload] = useState(false);
     const [pipelineStatus, setPipelineStatus] = useState<string | null>(null);
+    const pdfInputRef = useRef<HTMLInputElement>(null);
 
     const { lastMessage, isConnected } = useWebSocket(id);
 
@@ -165,7 +108,7 @@ export default function CaseDetailPage() {
                 formData.append("content", urlInput);
                 formData.append("title", urlInput.slice(0, 80));
             } else if (uploadType === "pdf") {
-                const fileInput = document.getElementById("pdf-input") as HTMLInputElement;
+                const fileInput = pdfInputRef.current;
                 if (fileInput?.files?.[0]) {
                     formData.append("file", fileInput.files[0]);
                     formData.append("type", "pdf");
@@ -336,7 +279,7 @@ export default function CaseDetailPage() {
                             )}
                             {uploadType === "pdf" && (
                                 <div className="dropzone">
-                                    <input type="file" id="pdf-input" accept=".pdf" style={{ display: "none" }} />
+                                    <input type="file" ref={pdfInputRef} accept=".pdf" style={{ display: "none" }} />
                                     <label htmlFor="pdf-input" style={{ cursor: "pointer", display: "block" }}>
                                         <Upload size={32} style={{ margin: "0 auto 12px", color: "var(--accent-blue)" }} />
                                         <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Click to select a PDF file</p>
@@ -359,7 +302,7 @@ export default function CaseDetailPage() {
             <div style={{
                 display: "flex", gap: 0, padding: "0 28px",
                 borderBottom: "1px solid var(--border-subtle)",
-                background: "rgba(12, 16, 41, 0.6)",
+                background: "rgba(15, 17, 21, 0.8)",
                 backdropFilter: "blur(12px)",
                 overflowX: "auto",
                 position: "sticky",
@@ -371,7 +314,7 @@ export default function CaseDetailPage() {
                         key={tab.key}
                         className={`tab-item ${activeTab === tab.key ? "active" : ""}`}
                         onClick={() => setActiveTab(tab.key)}
-                        whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.05)" }}
+                        whileHover={{ backgroundColor: "rgba(247, 147, 26, 0.05)" }}
                         style={{ padding: "14px 24px" }}
                     >
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -380,11 +323,12 @@ export default function CaseDetailPage() {
                             {tab.count !== undefined && tab.count > 0 && (
                                 <span style={{
                                     fontSize: 11,
-                                    background: activeTab === tab.key ? "rgba(59,130,246,0.25)" : "var(--bg-tertiary)",
+                                    background: activeTab === tab.key ? "rgba(247, 147, 26, 0.15)" : "var(--bg-tertiary)",
                                     padding: "2px 8px",
                                     borderRadius: 10,
                                     fontWeight: 600,
-                                    color: activeTab === tab.key ? "var(--accent-blue)" : "var(--text-muted)",
+                                    fontFamily: "var(--font-mono)",
+                                    color: activeTab === tab.key ? "#F7931A" : "var(--text-muted)",
                                     minWidth: 20,
                                     textAlign: "center",
                                 }}>
